@@ -24,6 +24,10 @@ float kp = 0.4044;
 float ki = 0.01;
 float kd = 3.3718;
 
+unsigned long last_ms; 
+double prev_error;     
+double integral;       
+
 float calc_temp(int valorTmp) {
   float Rt = (1023.0 * 10000.0 / valorTmp) - 10000.0;
   float T0 = 25.0 + 273.15;
@@ -41,6 +45,11 @@ void setup_pin_leds(){
 }
 
 void setup_sistema(){
+
+  last_ms = -FREQ_CONTROL; 
+  prev_error = 0;
+  integral = 0;
+  
   valorTmp = analogRead(PIN_TEMP);
   tempActual = calc_temp(valorTmp);
   
@@ -87,14 +96,21 @@ void loop () {
   if( t_actual - tiempo_control > FREQ_CONTROL ){
     float error = TEMP_PIV - tempActual;
 
-    if( error <= 0){
+    last_ms += FREQ_CONTROL;
+    integral = integral + (error * (FREQ_CONTROL * 1e-3));
+    double derivative = (error - prev_error) / (FREQ_CONTROL * 1e-3);
+    double PID = kp * error + ki * integral + kd * derivative;
+    prev_error = error;
+
+
+    if( PID <= 0){
       digitalWrite(PIN_LED_ROJO,LOW);
       digitalWrite(PIN_PNP,LOW);
       Serial.print(tempActual);
       Serial.println(" 0");
-    } else if (error < 5){
+    } else if (PID < 5){
       estadoError = true;
-      tiempoPeriodoError = t_actual + 1000 * error;
+      tiempoPeriodoError = t_actual + 1000 * PID;
 
       digitalWrite(PIN_LED_ROJO,HIGH);
       digitalWrite(PIN_PNP,HIGH);
