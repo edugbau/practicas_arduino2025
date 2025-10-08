@@ -1,4 +1,3 @@
-
 /* - - PINES - - */
 const int PIN_LED_ROJO = 3;
 const int PIN_LED_VERDE = 5;
@@ -12,9 +11,7 @@ const int TEMP_PIV = 38;
 const int FREQ_ACT_VERDE = 1000;
 const int FREQ_CONTROL = 5000;
 /* - - PARÁMETROS - - */
-const float T0 = 25.0;
-const float R0 = 1000.0;
-const float B = 3977.0;
+
 unsigned long tiempo_control;
 unsigned long tiempo_led_verde;
 unsigned long tiempoPeriodoError;
@@ -23,13 +20,14 @@ bool estadoError = false;
 float tempActual;
 int valorTmp;
 
-
-float calc_temp(int valorTmp ){
-  float t , r ;
-  r = ((1023.0 * 10000 ) / float ( valorTmp )) - 10000 ;
-  float T0kelvin = T0 + 273.15;
-  t = 1.0 / ((1.0 / T0kelvin ) + ( log ( r / R0 ) / B ));
-  return t - 273.15; 
+float calc_temp(int valorTmp) {
+  float Rt = (1023.0 * 10000.0 / valorTmp) - 10000.0;
+  float T0 = 25.0 + 273.15;
+  float R0 = 10000.0;
+  float B = 3977.0;
+  float tempK = 1.0 / ( (1.0 / T0) + (1.0 / B) * log(Rt / R0) );
+  float tempC = tempK - 273.15;
+  return tempC;
 }
 
 void setup_pin_leds(){
@@ -43,16 +41,17 @@ void setup_sistema(){
   tempActual = calc_temp(valorTmp);
   
   Serial.println("#> Arduino Control de Temperatura Basico (5000ms)");
-  Serial.println("#$ -y20:45 -w4 -l36 -l38 -l40 -tTemperatura -tCalefactor");
   
   if( tempActual < TEMP_PIV ){
     digitalWrite(PIN_LED_ROJO,HIGH);
     digitalWrite(PIN_PNP,HIGH);
-    Serial.println("%d 1",tempActual);
+    Serial.print(tempActual);
+    Serial.println(" 1");
   }else{
     digitalWrite(PIN_LED_ROJO,LOW);
     digitalWrite(PIN_PNP,LOW);
-    Serial.println("%d 0",tempActual);
+    Serial.print(tempActual);
+    Serial.println(" 0");
   }
 
   if( tempActual < TEMP_MIN || tempActual > TEMP_MAX ){
@@ -69,7 +68,6 @@ void setup_sistema(){
 void setup (){
   Serial.begin(9600);
   while( !Serial ){
-    // Esperamos a que cargue el puerto Serial;
   } 
   
   setup_pin_leds();
@@ -88,18 +86,21 @@ void loop () {
     if( error <= 0){
       digitalWrite(PIN_LED_ROJO,LOW);
       digitalWrite(PIN_PNP,LOW);
-      Serial.println("%d 0",tempActual);
+      Serial.print(tempActual);
+      Serial.println(" 0");
     } else if (error < 5){
       estadoError = true;
       tiempoPeriodoError = t_actual + 1000 * error;
 
-      digitalWrite(PIN_LED_ROJO,LOW);
-      digitalWrite(PIN_PNP,LOW);
-      Serial.println("%d 0",tempActual);
+      digitalWrite(PIN_LED_ROJO,HIGH);
+      digitalWrite(PIN_PNP,HIGH);
+      Serial.print(tempActual);
+      Serial.println(" 1");
     }else{
       digitalWrite(PIN_LED_ROJO,HIGH);
       digitalWrite(PIN_PNP,HIGH);
-      Serial.println("%d 1",tempActual);
+      Serial.print(tempActual);
+      Serial.println(" 1");
     }
     
     tiempo_control = t_actual;
@@ -107,7 +108,8 @@ void loop () {
     estadoError = false;
     digitalWrite(PIN_LED_ROJO,LOW);
     digitalWrite(PIN_PNP,LOW);
-    Serial.println("%d 0",tempActual);
+    Serial.print(tempActual);
+    Serial.println(" 0");
   }
 
   if( t_actual - tiempo_led_verde > FREQ_ACT_VERDE ) {

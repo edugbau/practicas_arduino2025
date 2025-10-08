@@ -1,24 +1,28 @@
+/* - - PINES - - */
 const int PIN_LED_ROJO = 3;
 const int PIN_LED_VERDE = 5;
 const int PIN_PNP = 2;
 const int PIN_TEMP = 0;
+/* - - TEMPERATURA - - */
 const int TEMP_MAX = 40;
 const int TEMP_MIN = 36;
 const int TEMP_PIV = 38;
+/* - - TIEMPOS - - */ 
 const int FREQ_ACT_VERDE = 1000;
 const int FREQ_CONTROL = 5000;
-float Kp = 0.4044;
-float Ki = 0.0100;
-float Kd = 3.3718;
+/* - - PARÁMETROS - - */
+
 unsigned long tiempo_control;
 unsigned long tiempo_led_verde;
-unsigned long last_ms;
-float integral = 0;
-float prev_error = 0;
+unsigned long tiempoPeriodoError;
+bool estadoError = false;
+
 float tempActual;
 int valorTmp;
-bool estadoPID = false;
-int tiempoPeriodoPID;
+
+float kp = 0.4044;
+float ki = 0.01;
+float kd = 3.3718;
 
 float calc_temp(int valorTmp) {
   float Rt = (1023.0 * 10000.0 / valorTmp) - 10000.0;
@@ -39,7 +43,9 @@ void setup_pin_leds(){
 void setup_sistema(){
   valorTmp = analogRead(PIN_TEMP);
   tempActual = calc_temp(valorTmp);
-  Serial.println("#> Arduino Control de Temperatura PID");
+  
+  Serial.println("#> Arduino Control de Temperatura Basico (5000ms)");
+  
   if( tempActual < TEMP_PIV ){
     digitalWrite(PIN_LED_ROJO,HIGH);
     digitalWrite(PIN_PNP,HIGH);
@@ -51,22 +57,26 @@ void setup_sistema(){
     Serial.print(tempActual);
     Serial.println(" 0");
   }
+
   if( tempActual < TEMP_MIN || tempActual > TEMP_MAX ){
     digitalWrite(PIN_LED_VERDE, LOW);
   }else{
     digitalWrite(PIN_LED_VERDE, HIGH);
   }
+
   unsigned long t_actual = millis();
   tiempo_control = t_actual;
   tiempo_led_verde = t_actual;
-  last_ms = -FREQ_CONTROL;
 }
 
 void setup (){
   Serial.begin(9600);
-  while( !Serial ){}
+  while( !Serial ){
+  } 
+  
   setup_pin_leds();
   setup_sistema();
+  
 }
 
 void loop () {
@@ -76,7 +86,6 @@ void loop () {
   
   if( t_actual - tiempo_control > FREQ_CONTROL ){
     float error = TEMP_PIV - tempActual;
-    
 
     if( error <= 0){
       digitalWrite(PIN_LED_ROJO,LOW);
