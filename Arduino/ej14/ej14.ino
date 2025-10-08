@@ -19,6 +19,7 @@ unsigned long tiempo_control;
 unsigned long tiempo_led_verde;
 
 float tempActual;
+int valorTmp;
 
 
 float calc_temp(int valorTmp ){
@@ -36,7 +37,7 @@ void setup_pin_leds(){
 }
 
 void setup_sistema(){
-  int valorTmp = analogRead(PIN_TEMP);
+  valorTmp = analogRead(PIN_TEMP);
   tempActual = calc_temp(valorTmp);
   
   Serial.println("#> Arduino Control de Temperatura Basico (5000ms)");
@@ -74,6 +75,8 @@ void setup (){
 
 void loop () {
   unsigned long t_actual = millis ();
+  valorTmp = analogRead(PIN_TEMP);
+  tempActual = calc_temp(valorTmp);
   
   if( t_actual - tiempo_control > FREQ_CONTROL ){
 
