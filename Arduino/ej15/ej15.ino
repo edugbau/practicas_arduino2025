@@ -17,6 +17,8 @@ const float R0 = 1000.0;
 const float B = 3977.0;
 unsigned long tiempo_control;
 unsigned long tiempo_led_verde;
+unsigned long tiempoPeriodoError;
+bool estadoError = false;
 
 float tempActual;
 int valorTmp;
@@ -81,18 +83,31 @@ void loop () {
   tempActual = calc_temp(valorTmp);
   
   if( t_actual - tiempo_control > FREQ_CONTROL ){
+    float error = TEMP_PIV - tempActual;
 
-    if( tempActual < TEMP_PIV ){
-      digitalWrite(PIN_LED_ROJO,HIGH);
-      digitalWrite(PIN_TEMP,HIGH);
-      Serial.println("%d 1",tempActual);
-    }else{
+    if( error <= 0){
       digitalWrite(PIN_LED_ROJO,LOW);
-      digitalWrite(PIN_TEMP,LOW);
+      digitalWrite(PIN_PNP,LOW);
       Serial.println("%d 0",tempActual);
+    } else if (error < 5){
+      estadoError = true;
+      tiempoPeriodoError = t_actual + 1000 * error;
+
+      digitalWrite(PIN_LED_ROJO,LOW);
+      digitalWrite(PIN_PNP,LOW);
+      Serial.println("%d 0",tempActual);
+    }else{
+      digitalWrite(PIN_LED_ROJO,HIGH);
+      digitalWrite(PIN_PNP,HIGH);
+      Serial.println("%d 1",tempActual);
     }
     
     tiempo_control = t_actual;
+  } else if (estadoError && t_actual > tiempoPeriodoError){
+    estadoError = false;
+    digitalWrite(PIN_LED_ROJO,LOW);
+    digitalWrite(PIN_PNP,LOW);
+    Serial.println("%d 0",tempActual);
   }
 
   if( t_actual - tiempo_led_verde > FREQ_ACT_VERDE ) {
