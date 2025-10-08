@@ -45,7 +45,11 @@ void setup_sistema(){
   
   if( tempActual < TEMP_PIV ){
     digitalWrite(PIN_LED_ROJO,HIGH);
+<<<<<<< Updated upstream:Arduino/ej14/ej14.ino
     digitalWrite(PIN_PNP,HIGH);
+=======
+    digitalWrite(PIN_PNP, HIGH);
+>>>>>>> Stashed changes:ej14.ino
     Serial.println("%d 1",tempActual);
   }else{
     digitalWrite(PIN_LED_ROJO,LOW);
@@ -77,12 +81,20 @@ void setup (){
 
 void loop () {
   unsigned long t_actual = millis ();
+<<<<<<< Updated upstream:Arduino/ej14/ej14.ino
   valorTmp = analogRead(PIN_TEMP);
   tempActual = calc_temp(valorTmp);
   
   if( t_actual - tiempo_control > FREQ_CONTROL ){
 
     if( tempActual < TEMP_PIV ){
+=======
+ 
+
+  if( t_actual - tiempo_control > FREQ_CONTROL ){
+    
+    if( tempActual > TEMP_PIV ){
+>>>>>>> Stashed changes:ej14.ino
       digitalWrite(PIN_LED_ROJO,HIGH);
       digitalWrite(PIN_TEMP,HIGH);
       Serial.println("%d 1",tempActual);
