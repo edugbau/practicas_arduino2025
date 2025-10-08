@@ -18,6 +18,8 @@ const float B = 3977.0;
 unsigned long tiempo_control;
 unsigned long tiempo_led_verde;
 
+float tempActual;
+
 
 float calc_temp(int valorTmp ){
   float t , r ;
@@ -35,7 +37,7 @@ void setup_pin_leds(){
 
 void setup_sistema(){
   int valorTmp = analogRead(PIN_TEMP);
-  float tempActual = calc_temp(valorTmp);
+  tempActual = calc_temp(valorTmp);
   
   Serial.println("#> Arduino Control de Temperatura Basico (5000ms)");
   Serial.println("#$ -y20:45 -w4 -l36 -l38 -l40 -tTemperatura -tCalefactor");
@@ -63,7 +65,7 @@ void setup (){
   Serial.begin(9600);
   while( !Serial ){
     // Esperamos a que cargue el puerto Serial;
-  }: 
+  } 
   
   setup_pin_leds();
   setup_sistema();
@@ -96,7 +98,7 @@ void loop () {
       digitalWrite(PIN_LED_VERDE, HIGH);
     }
 
-    tiempo_led_verde = t_actual
+    tiempo_led_verde = t_actual;
 
   }
 }
